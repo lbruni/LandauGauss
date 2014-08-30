@@ -46,7 +46,7 @@ TH2D loopOverFolder( Int_t &size)
 		_tprintf(TEXT("Current File %s\n"),e.cFileName);
 
 
-		TFile inputFile(WChar2Char(e.cFileName));
+		TFile inputFile((e.cFileName));
 		TH2D *h2=(TH2D*)inputFile.Get("TH2;1");
 		h1=get_strip_effi(h2);
 		TObjString *s=(TObjString*)inputFile.Get("Threshold;1");

@@ -33,7 +33,7 @@ LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
 
 # build SCOM  library
-add_subdirectory(lib)
+add_subdirectory(main)
 
 
 

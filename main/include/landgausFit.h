@@ -111,7 +111,7 @@ public:
 	void saveFitToFile(const char* fileName);
 
 	//////////////////////////////////////////////////////////////////////////
-
+	TF1* getLandau();
 private:
 	
 #ifndef __CINT__  // there is no need to create a Dictionary for this since you cannot call it from outside the class anyway

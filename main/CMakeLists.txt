@@ -7,18 +7,19 @@ FIND_PACKAGE( ROOT REQUIRED)
 AUX_SOURCE_DIRECTORY( src library_sources )
 SET(LandauGauss_name LandauGaussDict.cxx)
 
+file(GLOB Demo_HEADERS *.h)
+source_group("Headers" FILES ${Demo_HEADERS})
 
-SOURCE_GROUP(Headers  ./libs/inc/*.h)
 
 
 INCLUDE_DIRECTORIES(  ${ROOT_INCLUDE_DIR} )
 
 # fill list of header files 
 set(LandauGauss_HEADERS 
- C:/projects/git/LandauGauss/lib/include/landgausFit.h
+ C:/projects/git/LandauGauss/main/include/landgausFit.h
   )
 
-SET(MY_INCLUDE_DIRECTORIES ./lib/inc ./inc ../../lib/inc ${ROOT_INCLUDE_DIR} )
+SET(MY_INCLUDE_DIRECTORIES ./main/inc ./inc ../../main/inc ${ROOT_INCLUDE_DIR} )
 
 # set everything needed for the root dictonary and create the
 # dictionary

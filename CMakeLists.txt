@@ -24,7 +24,7 @@ SET(CMAKE_INSTALL_PREFIX "${INSTALL_PREFIX}" CACHE INTERNAL "Prefix prepended to
 
 
 # include directories
-INCLUDE_DIRECTORIES( ./lib/include )
+INCLUDE_DIRECTORIES( ./main/include )
 
 # additional packages to be searched for by cmake
 LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
@@ -33,7 +33,7 @@ LIST( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 
 
 # build SCOM  library
-add_subdirectory(lib)
+add_subdirectory(main)
 
 
 

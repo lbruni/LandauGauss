@@ -647,6 +647,11 @@ Size_t landgausFit::Size()
 	return returnValue;
 }
 
+void landgausFit::setFitRange(Double_t MinValue, Double_t MaxValue)
+{
+  fitLandau_->SetRange(MinValue, MaxValue);
+}
+
 void makeSplineFunction(const Double_t StartOfTheInterval/*=-10*/,const Double_t endOfTheInterval/*=40*/,const size_t steps/*=200*/)
 {
 	if (g_spline==nullptr)

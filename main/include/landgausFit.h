@@ -53,6 +53,7 @@ public:
 	void setLimits_LandauSigma(Double_t startValue=0,Double_t endValue=1000);
 	void setLimits_GaussSigma(Double_t startValue=0,Double_t endValue=1000);
 	void setFitOptions(const char* options);
+  void setFitRange(Double_t MinValue, Double_t MaxValue);
 	// the default values have to be implemented different in future 
 	//////////////////////////////////////////////////////////////////////////
 

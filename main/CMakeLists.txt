@@ -8,18 +8,18 @@ AUX_SOURCE_DIRECTORY( src library_sources )
 SET(LandauGauss_name LandauGaussDict.cxx)
 
 
-SOURCE_GROUP(Headers  ./libs/inc/*.h)
+SOURCE_GROUP(Headers  ./main/inc/*.h)
 
 
 INCLUDE_DIRECTORIES(  ${ROOT_INCLUDE_DIR} )
 
 # fill list of header files 
 set(LandauGauss_HEADERS 
- C:/projects/git/LandauGauss/lib/include/landgausFit.h
+ ${PROJECT_SOURCE_DIR}/main/include/landgausFit.h
   )
 
-SET(MY_INCLUDE_DIRECTORIES ./lib/inc ./inc ../../lib/inc ${ROOT_INCLUDE_DIR} )
-
+SET(MY_INCLUDE_DIRECTORIES ./main/inc ./inc ../../main/inc ${ROOT_INCLUDE_DIR} )
+INCLUDE_DIRECTORIES(  ${MY_INCLUDE_DIRECTORIES} )
 # set everything needed for the root dictonary and create the
 # dictionary
 set(LandauGauss_DICTIONARY ${CMAKE_CURRENT_BINARY_DIR}/${LandauGauss_name}) 

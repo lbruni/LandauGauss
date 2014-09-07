@@ -16,7 +16,7 @@ using namespace std;
 	Double_t landau_function_int( Double_t* x, Double_t* para );
 	
 	// creates a spline Function of the the landau Function. this function will be called Automatically by the creation of the object. The spline will only be created independing on how many instances of this class you have
-	void makeSplineFunction(const Double_t StartOfTheInterval=-100,const Double_t endOfTheInterval=500,const size_t steps=300);
+	void makeSplineFunction(const Double_t StartOfTheInterval=-100,const Double_t endOfTheInterval=500,const size_t steps=3000);
 	TSpline3* g_spline=nullptr;
 	Double_t gSplineMin=-10,gSplineMax=40;
 //
@@ -39,7 +39,7 @@ landgausFit::landgausFit(void)
 
 	ffit =nullptr;
 	// preparing the fit function
-	fit_Landau_gauss_ = new TF1("fitFun",&LandauGaus,0,1000,4);
+	fit_Landau_gauss_ = new TF1("fitFun",&LandauGaus,0,250,4);
 	fit_Landau_gauss_->SetParNames("landau_mean","landau_sigma","Amplitude","gaus_sigma");
 
 	
@@ -647,11 +647,15 @@ Size_t landgausFit::Size()
 	return returnValue;
 }
 
+TF1* landgausFit::getLandau()
+{
+	return fitLandau_;
+}
+
 void landgausFit::setFitRange(Double_t MinValue, Double_t MaxValue)
 {
   fitLandau_->SetRange(MinValue, MaxValue);
 }
-
 void makeSplineFunction(const Double_t StartOfTheInterval/*=-10*/,const Double_t endOfTheInterval/*=40*/,const size_t steps/*=200*/)
 {
 	if (g_spline==nullptr)
@@ -672,11 +676,13 @@ void makeSplineFunction(const Double_t StartOfTheInterval/*=-10*/,const Double_t
 	x[0]=StartOfTheInterval;
 	TF1 f1("lan","TMath::Landau(x,0,1,0)",StartOfTheInterval,endOfTheInterval);
 	//f1.SetParameter(0,sigma);
+	ofstream out("C:/SLAC_data/testLandau.txt");
 	for(Int_t i=1;i<steps;++i) {
 		x[i]=x[i-1]+stepSize;
 		Double_t x1=x[i-1];
 		Double_t x2=x[i];
 		y[i]=y[i-1]-f1.Integral(x1,x2,(const Double_t*)0,epsilon);
+		out << " x = " << x[i] << "  y = " << y[i] << std::endl;
 	}
 
 	g_spline=new TSpline3("Ilandau",x,y,steps,"b2e2",0,0);

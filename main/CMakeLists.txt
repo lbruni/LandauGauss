@@ -7,6 +7,8 @@ FIND_PACKAGE( ROOT REQUIRED)
 AUX_SOURCE_DIRECTORY( src library_sources )
 SET(LandauGauss_name LandauGaussDict.cxx)
 
+file(GLOB Demo_HEADERS *.h)
+source_group("Headers" FILES ${Demo_HEADERS})
 
 SOURCE_GROUP(Headers  ./main/inc/*.h)
 

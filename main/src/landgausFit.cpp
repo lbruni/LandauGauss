@@ -22,6 +22,8 @@ using namespace std;
 //
 
 	TGraph* makeCopieOfTH1D(TH1D* h1);
+  TGraph* makeCopieOfTGraph(TGraph* h1);
+
 
 landgausFit::landgausFit(void)
 {
@@ -283,7 +285,7 @@ Int_t landgausFit::operator()( TGraph *fitData )
 
 	// only one type of data container should be active therefore the program checks both container types 
 	DeleteCopies();
-	g=dynamic_cast<TGraph*>(fitData->Clone());
+	g=makeCopieOfTGraph(fitData);
 	DrawAble=true;
 	++numOfFits;
 	//////////////////////////////////////////////////////////////////////////
@@ -321,7 +323,7 @@ Int_t landgausFit::operator()( TGraph *fitData )
 	}
 
 	//fitData->Fit(ffit,"RB0QWW");   // fit within specified range, use ParLimits, do not plot
-	fitData->Fit(ffit,fitOptions_.c_str());   
+	g->Fit(ffit,fitOptions_.c_str());   
 	ffit->GetParameters(parameters);    // obtain fit parameters
 	for (Int_t i=0; i<4; i++) {
 		fiterrors[i] = ffit->GetParError(i);     // obtain fit parameter errors
@@ -349,7 +351,7 @@ g=makeCopieOfTH1D(fitData);
 		ffit->SetParLimits(i, parLimitsLo[i], parLimitsHi[i]);
 	}
 
-	fitData->Fit(ffit,fitOptions_.c_str());   // fit within specified range, use ParLimits, do not plot
+	g->Fit(ffit,fitOptions_.c_str());   // fit within specified range, use ParLimits, do not plot
 
 	ffit->GetParameters(parameters);    // obtain fit parameters
 	for (Int_t i=0; i<4; i++) {
@@ -369,7 +371,7 @@ Int_t landgausFit::fitLandau( TGraph* fitData )
 	++numOfFits;
 	DeleteCopies();
 
-	g=dynamic_cast<TGraph*>(fitData->Clone());
+	g=makeCopieOfTGraph(fitData);
 
 	
 	ffit=fitLandau_;
@@ -466,7 +468,7 @@ Int_t landgausFit::FastFit( TH1D *fitData )
 		ffit->SetParLimits(i, parLimitsLo[i], parLimitsHi[i]);
 	}
 
-	fitData->Fit(ffit,fitOptions_.c_str());   // fit within specified range, use ParLimits, do not plot
+	g->Fit(ffit,fitOptions_.c_str());   // fit within specified range, use ParLimits, do not plot
 
 	ffit->GetParameters(parameters);    // obtain fit parameters
 	for (Int_t i=0; i<4; i++) {
@@ -493,8 +495,8 @@ Int_t landgausFit::DrawfitFunction()
 if (g!=nullptr)
 {
 
-	g->GetXaxis()->SetLimits(0,800);
-	g->GetYaxis()->SetLimits(0,1);
+	//g->GetXaxis()->SetLimits(0,800);
+	//g->GetYaxis()->SetLimits(0,1);
 	g->Draw("AP*");
 }
 if (hData!=nullptr)
@@ -786,4 +788,21 @@ TGraph* makeCopieOfTH1D(TH1D* h1){ // somehow i had some problems with just
 	g1->SetEditable(false);
 
 return g1;
+}
+TGraph* makeCopieOfTGraph(TGraph* graph_in){ // somehow i had some problems with just 
+  // cloning the data therefore i make the copy by hand
+
+  TGraph *g1 = new TGraph();
+  for (size_t i = 0; i < graph_in->GetN(); ++i)
+  {
+    Double_t x, y;
+    graph_in->GetPoint(i, x, y);
+    g1->SetPoint(i, x, y);
+      
+    //cout<<h1->GetBinCenter(i)<<"   ;   " <<x<< "   ;   "<<h1->GetBinContent(i)<<"  ;  "<<y<<endl;
+  }
+
+  g1->SetEditable(false);
+
+  return g1;
 }

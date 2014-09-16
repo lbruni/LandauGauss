@@ -7,14 +7,27 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include "fitFunctionClass.hh"
+
+#define lanMp   0
+#define lanSig  1
+#define Ampl    2
+#define gausSig 3
+#define parSize 4
+
 
 using namespace std;
+// first convolute than inegerating 
+Double_t LandauGaus(Double_t* x, Double_t* par);
+
+
 
 // The Fit Method cannot access member functions. therefore this functions has to be global.
 	Double_t landau_function( Double_t* x, Double_t* para );
-	Double_t LandauGaus( Double_t *x,Double_t *par );
+	Double_t LandauGausInt( Double_t *x,Double_t *par );
 	Double_t landau_function_int( Double_t* x, Double_t* para );
-	
+ // Double_t newLandaGausInt(Double_t* x, Double_t* par);
+
 	// creates a spline Function of the the landau Function. this function will be called Automatically by the creation of the object. The spline will only be created independing on how many instances of this class you have
 	void makeSplineFunction(const Double_t StartOfTheInterval=-100,const Double_t endOfTheInterval=500,const size_t steps=3000);
 	TSpline3* g_spline=nullptr;
@@ -41,7 +54,7 @@ landgausFit::landgausFit(void)
 
 	ffit =nullptr;
 	// preparing the fit function
-	fit_Landau_gauss_ = new TF1("fitFun",&LandauGaus,0,250,4);
+  fit_Landau_gauss_ = new TF1("fitFun", &NewLandauGausInt, 0, 250, 4);
 	fit_Landau_gauss_->SetParNames("landau_mean","landau_sigma","Amplitude","gaus_sigma");
 
 	
@@ -111,66 +124,66 @@ void landgausFit::DeleteCopies()
 
 void landgausFit::setStartValues( Double_t Amplitude/*=1*/, Double_t landau_mean/*=200*/,Double_t landau_sigma/*=70*/,Double_t gaus_sigma/*=10*/ )
 {
-	StartValues[0]=landau_mean;
-	StartValues[1]=landau_sigma;
-	StartValues[2]=Amplitude;
-	StartValues[3]=gaus_sigma;
+	StartValues[lanMp]=landau_mean;
+	StartValues[lanSig]=landau_sigma;
+	StartValues[Ampl]=Amplitude;
+	StartValues[gausSig]=gaus_sigma;
 
 
 }
 
 void landgausFit::setStartAmplitude( Double_t Amplitude/*=1*/ )
 {
-	StartValues[2]=Amplitude;
+	StartValues[Ampl]=Amplitude;
 }
 
 void landgausFit::setStartLandauMean( Double_t landau_mean/*=200*/ )
 {
-		StartValues[0]=landau_mean;
+		StartValues[lanMp]=landau_mean;
 }
 
 void landgausFit::setStartLandauSigma( Double_t landau_sigma/*=70*/ )
 {
-		StartValues[1]=landau_sigma;
+		StartValues[lanSig]=landau_sigma;
 }
 
 void landgausFit::setStartGaussSigma( Double_t gaus_sigma/*=10*/ )
 {
-	StartValues[3]=gaus_sigma;
+	StartValues[gausSig]=gaus_sigma;
 }
 
 void landgausFit::setLowerLimits( Double_t Amplitude/*=0*/, Double_t landau_mean/*=0*/,Double_t landau_sigma/*=0*/,Double_t gaus_sigma/*=0*/ )
 {
-	parLimitsLo[0]=landau_mean;
-	parLimitsLo[1]=landau_sigma;
-	parLimitsLo[2]=Amplitude;
-	parLimitsLo[3]=gaus_sigma;
+	parLimitsLo[lanMp]=landau_mean;
+	parLimitsLo[lanSig]=landau_sigma;
+	parLimitsLo[Ampl]=Amplitude;
+	parLimitsLo[gausSig]=gaus_sigma;
 }
 
 void landgausFit::setUpperLimits( Double_t Amplitude/*=2*/, Double_t landau_mean/*=1000*/,Double_t landau_sigma/*=1000*/,Double_t gaus_sigma/*=1000*/ )
 {
-	parLimitsHi[0]=landau_mean;
-	parLimitsHi[1]=landau_sigma;
-	parLimitsHi[2]=Amplitude;
-	parLimitsHi[3]=gaus_sigma;
+	parLimitsHi[lanMp]=landau_mean;
+	parLimitsHi[lanSig]=landau_sigma;
+	parLimitsHi[Ampl]=Amplitude;
+	parLimitsHi[gausSig]=gaus_sigma;
 }
 
 void landgausFit::setLimits_Amplitude( Double_t startValue/*=0*/,Double_t endValue/*=2*/ )
 {
-	parLimitsLo[2]=startValue;
-	parLimitsHi[2]=endValue;
+	parLimitsLo[Ampl]=startValue;
+	parLimitsHi[Ampl]=endValue;
 }
 
 void landgausFit::setLimits_LandauMP( Double_t startValue/*=0*/,Double_t endValue/*=1000*/ )
 {
-	parLimitsLo[0]=startValue;
-	parLimitsHi[0]=endValue;
+	parLimitsLo[lanMp]=startValue;
+	parLimitsHi[lanMp]=endValue;
 }
 
 void landgausFit::setLimits_LandauSigma( Double_t startValue/*=0*/,Double_t endValue/*=1000*/ )
 {
-	parLimitsLo[1]=startValue;
-	parLimitsHi[1]=endValue;
+	parLimitsLo[lanSig]=startValue;
+	parLimitsHi[lanSig]=endValue;
 }
 
 void landgausFit::setFitOptions( const char* options )
@@ -180,8 +193,8 @@ void landgausFit::setFitOptions( const char* options )
 
 void landgausFit::setLimits_GaussSigma( Double_t startValue/*=0*/,Double_t endValue/*=1000*/ )
 {
-	parLimitsLo[3]=startValue;
-	parLimitsHi[3]=endValue;
+	parLimitsLo[gausSig]=startValue;
+	parLimitsHi[gausSig]=endValue;
 }
 //////////////////////////////////////////////////////////////////////////
 // end Setter Functions
@@ -197,7 +210,7 @@ Double_t landgausFit::getAmplitude()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return parameters[2];
+	return parameters[Ampl];
 }
 
 Double_t landgausFit::getErrorOfAmplitude()
@@ -206,7 +219,7 @@ Double_t landgausFit::getErrorOfAmplitude()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return fiterrors[2];
+	return fiterrors[Ampl];
 }
 
 Double_t landgausFit::getLandauSigma()
@@ -215,7 +228,7 @@ Double_t landgausFit::getLandauSigma()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return parameters[1];
+	return parameters[lanSig];
 }
 
 Double_t landgausFit::getErrorOfGaussSigma()
@@ -224,7 +237,7 @@ Double_t landgausFit::getErrorOfGaussSigma()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return fiterrors[3];
+	return fiterrors[gausSig];
 }
 
 Double_t landgausFit::getGaussSigma()
@@ -233,7 +246,7 @@ Double_t landgausFit::getGaussSigma()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return parameters[3];
+	return parameters[gausSig];
 }
 
 Double_t landgausFit::getErrorOfLandauSigma()
@@ -242,7 +255,7 @@ Double_t landgausFit::getErrorOfLandauSigma()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return fiterrors[1];
+	return fiterrors[lanSig];
 }
 
 Double_t landgausFit::getLandauMostProbable()
@@ -251,7 +264,7 @@ Double_t landgausFit::getLandauMostProbable()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return parameters[0];
+	return parameters[lanMp];
 }
 
 
@@ -261,7 +274,7 @@ Double_t landgausFit::getErrorOfLandauMP()
 	{
 		return ERROR_RETURN_VALUE;
 	}
-	return fiterrors[0];
+	return fiterrors[lanMp];
 }
 
 Double_t landgausFit::GetNDF()
@@ -291,10 +304,10 @@ Int_t landgausFit::operator()( TGraph *fitData )
 	//////////////////////////////////////////////////////////////////////////
 	// landgaus.C
 	// Once again, here are the Landau * Gaussian parameters:
-	//   par[0]=Width (scale) parameter of Landau density
-	//   par[1]=Most Probable (MP, location) parameter of Landau density
-	//   par[2]=Total area (integral -inf to inf, normalization constant)
-	//   par[3]=Width (sigma) of convoluted Gaussian function
+	//   par[lanMp]=Width (scale) parameter of Landau density
+	//   par[lanSig]=Most Probable (MP, location) parameter of Landau density
+	//   par[Ampl]=Total area (integral -inf to inf, normalization constant)
+	//   par[gausSig]=Width (sigma) of convoluted Gaussian function
 	//
 	// Variables for langaufit call:
 	//   his             histogram to fit
@@ -388,8 +401,8 @@ Int_t landgausFit::fitLandau( TGraph* fitData )
 	for (Int_t i=0; i<3; i++) {
 		fiterrors[i] = fitLandau_->GetParError(i);     // obtain fit parameter errors
 	}
-	fiterrors[3]=0; // the value should not be nothing
-	parameters[3]=0; // same here
+	fiterrors[gausSig]=0; // the value should not be nothing
+	parameters[gausSig]=0; // same here
 
 	chi = fitLandau_->GetChisquare();  // obtain chi^2
 	NDf = fitLandau_->GetNDF();           // obtain ndf
@@ -408,10 +421,10 @@ Int_t landgausFit::FastFit( TGraph *fitData )
 	//////////////////////////////////////////////////////////////////////////
 	// landgaus.C
 	// Once again, here are the Landau * Gaussian parameters:
-	//   par[0]=Width (scale) parameter of Landau density
-	//   par[1]=Most Probable (MP, location) parameter of Landau density
-	//   par[2]=Total area (integral -inf to inf, normalization constant)
-	//   par[3]=Width (sigma) of convoluted Gaussian function
+	//   par[lanMp]=Width (scale) parameter of Landau density
+	//   par[lanSig]=Most Probable (MP, location) parameter of Landau density
+	//   par[Ampl]=Total area (integral -inf to inf, normalization constant)
+	//   par[gausSig]=Width (sigma) of convoluted Gaussian function
 	//
 	// Variables for langaufit call:
 	//   his             histogram to fit
@@ -701,7 +714,7 @@ Double_t landau_function( Double_t* x, Double_t* para )
 	// Susannes Code
 	//para 0=mpv
 	//para 1=sigma
-	Double_t dsig=((x[0]-para[0])/para[1]); //calculate distance from mpv in sigmas
+	Double_t dsig=((x[0]-para[lanMp])/para[lanSig]); //calculate distance from mpv in sigmas
 
 	// a spline function only gives reasonable values inside the range it is defined
 	// therefore one has to make sure that the values outside this range are reasonable
@@ -722,25 +735,25 @@ Double_t landau_function( Double_t* x, Double_t* para )
 	//////////////////////////////////////////////////////////////////////////
 }
 
-Double_t LandauGaus( Double_t *x,Double_t *par )
+Double_t LandauGausInt( Double_t *x,Double_t *par )
 {
 	//////////////////////////////////////////////////////////////////////////
 	// Susannes Code
 	  TString funcstr="0";
-	  Double_t tstep=par[3]/20;
+	  Double_t tstep=par[gausSig]/20;
       Int_t nsig=3;
   Double_t normgaus=0;
   
   //Zur Normierung: Schleife ueber nsig*sigma von Gauss (z.B. 2sigma). Um Summe des Gauss (ueber +-2sigma) um 0 zu berechnen. 
 /*  
-  for(Double_t t=-nsig*par[3];t<=nsig*par[3];t+=tstep) {
-    normgaus+=TMath::Gaus(t,0,par[3]);
+  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
+    normgaus+=TMath::Gaus(t,0,par[gausSig]);
   }
 */  
   Double_t faltung=0;
 
-  for(Double_t t=-nsig*par[3];t<=nsig*par[3];t+=tstep) {
-    Double_t gaus=TMath::Gaus(-t,0,par[3],kTRUE);
+  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
+    Double_t gaus=TMath::Gaus(-t,0,par[gausSig],kTRUE);
     normgaus+=gaus;    
     Double_t xlandau=x[0]+t;
     faltung+=gaus*landau_function(&xlandau,par);
@@ -748,7 +761,7 @@ Double_t LandauGaus( Double_t *x,Double_t *par )
  // cout<<" normgaus = "<<normgaus<<"   1/tstep = "<<1/tstep<<endl;
   faltung*=tstep;
   //faltung/=normgaus;
-  faltung=faltung*par[2];
+  faltung=faltung*par[Ampl];
 
 
 
@@ -756,8 +769,8 @@ Double_t LandauGaus( Double_t *x,Double_t *par )
   
   //Faltung durch Addition:Schleife ueber nsig*sigma von Gauss (z.B. 2sigma).
   // Um Summe des normierten Gauss (ueber +-2sigma) um 0 und des integrierten Landau an der Stelle x+t zu berechnen.
-  for(Double_t t=-nsig*par[3];t<=nsig*par[3];t+=tstep) {
-    funcstr+=(func_gspline(x+t,par[0],par[1]),TMath::Gaus(t,0,par[3])/normgaus,t);
+  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
+    funcstr+=(func_gspline(x+t,par[lanMp],par[lanSig]),TMath::Gaus(t,0,par[gausSig])/normgaus,t);
   }*/
 
 //////////////////////////////////////////////////////////////////////////
@@ -769,7 +782,7 @@ Double_t landau_function_int( Double_t* x, Double_t* para ){
 	//para 0=mpv
 	//para 1=sigma
 	//para 2=Amplitude
-	return landau_function(x,para)*para[2];
+	return landau_function(x,para)*para[Ampl];
 
 }
 
@@ -805,4 +818,121 @@ TGraph* makeCopieOfTGraph(TGraph* graph_in){ // somehow i had some problems with
   g1->SetEditable(false);
 
   return g1;
+}
+
+Double_t LandauGaus(Double_t* x, Double_t* par)
+{
+  //   par[lanMp]=Width (scale) parameter of Landau density
+  //   par[lanSig]=Most Probable (MP, location) parameter of Landau density
+  //   par[Ampl]=Total area (integral -inf to inf, normalization constant)
+  //   par[gausSig]=Width (sigma) of convoluted Gaussian function
+
+
+  
+
+
+  Double_t tstep = par[gausSig] / 20;
+  Int_t nsig = 3;
+  Double_t normgaus = 0;
+
+  //Zur Normierung: Schleife ueber nsig*sigma von Gauss (z.B. 2sigma). Um Summe des Gauss (ueber +-2sigma) um 0 zu berechnen. 
+  /*
+  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
+  normgaus+=TMath::Gaus(t,0,par[gausSig]);
+  }
+  */
+  Double_t faltung = 0;
+
+  for (Double_t t = -nsig*par[gausSig]; t <= nsig*par[gausSig]; t += tstep) {
+    Double_t gaus = TMath::Gaus(-t, 0, par[gausSig], kTRUE);
+  //  normgaus += gaus;
+    Double_t xlandau = x[0] + t;
+    faltung += gaus*TMath::Landau(xlandau, par[lanMp],par[lanSig]);
+  }
+  // cout<<" normgaus = "<<normgaus<<"   1/tstep = "<<1/tstep<<endl;
+  faltung *= tstep;
+  //faltung/=normgaus;
+  //faltung = faltung*par[Ampl];
+
+
+  return faltung;
+}
+
+// Double_t newLandaGausInt(Double_t* x, Double_t* par){
+//   cout << "start newLandaGausInt" << endl;
+// 
+//   static Double_t lokal_para[parSize] = { 0 };
+//   bool newParam = false;
+//   for (size_t i = 0; i < parSize; ++i)
+//   {
+//     if (par[i] != lokal_para[i])
+//     {
+//       cout << "new Parameter" << endl;
+//       newParam = true;
+// 
+//       break;
+//     }
+//   }
+// 
+//   if (newParam)
+//   {
+// 
+//     for (size_t j = 0; j < parSize; ++j)
+//     {
+//       lokal_para[j] = par[j];
+//     }
+// 
+// 
+//   }
+//   Double_t integr = 1;
+// 
+//   Double_t x_start = par[lanMp] - 20 * __max(par[lanSig], par[gausSig]);
+//   
+//   Double_t x_step = __min(par[lanSig], par[gausSig])/20;
+// 
+// 
+//   for (Double_t i = x_start; i < x[0]; i+=x_step)
+//   {
+//     integr -= LandauGaus(&i, par);
+//   }
+// 
+//   integr *= par[Ampl];
+//  
+//   return integr;
+// }
+
+void makeSplineFunctionNewLandauGaus(const Double_t StartOfTheInterval/*=-10*/, const Double_t endOfTheInterval/*=40*/, const size_t steps/*=200*/)
+{
+  if (g_spline == nullptr)
+  {
+    gSplineMin = StartOfTheInterval;
+    gSplineMax = endOfTheInterval;
+    Double_t stepSize = (endOfTheInterval - StartOfTheInterval) / (steps - 1);
+    //////////////////////////////////////////////////////////////////////////
+    // Susannes Code
+    //
+    const Double_t epsilon = 1e-6;
+
+    Double_t* x = new Double_t[steps];
+    Double_t* y = new Double_t[steps];
+
+
+    y[0] = 1; // define integral as 0 for x=-n_sigmas*width
+    x[0] = StartOfTheInterval;
+    TF1 f1("lan", "TMath::Landau(x,0,1,0)", StartOfTheInterval, endOfTheInterval);
+    //f1.SetParameter(0,sigma);
+    ofstream out("C:/SLAC_data/testLandau.txt");
+    for (Int_t i = 1; i < steps; ++i) {
+      x[i] = x[i - 1] + stepSize;
+      Double_t x1 = x[i - 1];
+      Double_t x2 = x[i];
+      y[i] = y[i - 1] - f1.Integral(x1, x2, (const Double_t*) 0, epsilon);
+      out << " x = " << x[i] << "  y = " << y[i] << std::endl;
+    }
+
+    g_spline = new TSpline3("Ilandau", x, y, steps, "b2e2", 0, 0);
+    delete [] x;
+    delete [] y;
+    //////////////////////////////////////////////////////////////////////////
+  }
 }

@@ -25,14 +25,8 @@ Double_t LandauGaus(Double_t* x, Double_t* par);
 // The Fit Method cannot access member functions. therefore this functions has to be global.
 	Double_t landau_function( Double_t* x, Double_t* para );
 	Double_t LandauGausInt( Double_t *x,Double_t *par );
-	Double_t landau_function_int( Double_t* x, Double_t* para );
- // Double_t newLandaGausInt(Double_t* x, Double_t* par);
 
-	// creates a spline Function of the the landau Function. this function will be called Automatically by the creation of the object. The spline will only be created independing on how many instances of this class you have
-	void makeSplineFunction(const Double_t StartOfTheInterval=-100,const Double_t endOfTheInterval=500,const size_t steps=3000);
-	TSpline3* g_spline=nullptr;
-	Double_t gSplineMin=-10,gSplineMax=40;
-//
+
 
 	TGraph* makeCopieOfTH1D(TH1D* h1);
   TGraph* makeCopieOfTGraph(TGraph* h1);
@@ -50,7 +44,7 @@ landgausFit::landgausFit(void)
 	setStartValues();
 
 
-	makeSplineFunction();//-100,500,300);
+	
 
 	ffit =nullptr;
 	// preparing the fit function
@@ -59,8 +53,8 @@ landgausFit::landgausFit(void)
 
 	
 	//preparing the Landau Function
-	fitLandau_=new TF1("landau_int",&landau_function_int,0,1000,3);
-	fitLandau_->SetParNames("landau_mean","landau_sigma","Amplitude");
+//	fitLandau_=nullptr;
+	//fitLandau_->SetParNames("landau_mean","landau_sigma","Amplitude");
 	
 	// setting everything to the Default Values
 	setLimits_Amplitude();
@@ -74,12 +68,7 @@ landgausFit::landgausFit(void)
 landgausFit::~landgausFit(void)
 {
 	
-	if (g_spline!=nullptr)
-	{
-		delete g_spline;
-		g_spline=nullptr;
 
-	}
 
 	if (g!=nullptr)
 	{
@@ -96,11 +85,7 @@ landgausFit::~landgausFit(void)
 		delete fit_Landau_gauss_;
 		fit_Landau_gauss_=nullptr;
 	}
-	if (fitLandau_!=nullptr)
-	{
-		delete fitLandau_;
-		fitLandau_=nullptr;
-	}
+
 	
 }
 void landgausFit::DeleteCopies()
@@ -378,40 +363,40 @@ g=makeCopieOfTH1D(fitData);
 	
 	return SUCCESS_RETURN_VALUE;
 }
-Int_t landgausFit::fitLandau( TGraph* fitData )
-	{
-	DrawAble=true;
-	++numOfFits;
-	DeleteCopies();
-
-	g=makeCopieOfTGraph(fitData);
-
-	
-	ffit=fitLandau_;
-	fitLandau_->SetParameters(StartValues);
-
-
-	for (Int_t i=0; i<3; i++) {
-		fitLandau_->SetParLimits(i, parLimitsLo[i], parLimitsHi[i]);
-	}
-
-	fitData->Fit(ffit,fitOptions_.c_str());   // fit within specified range, use ParLimits, do not plot
-
-	fitLandau_->GetParameters(parameters);    // obtain fit parameters
-	for (Int_t i=0; i<3; i++) {
-		fiterrors[i] = fitLandau_->GetParError(i);     // obtain fit parameter errors
-	}
-	fiterrors[gausSig]=0; // the value should not be nothing
-	parameters[gausSig]=0; // same here
-
-	chi = fitLandau_->GetChisquare();  // obtain chi^2
-	NDf = fitLandau_->GetNDF();           // obtain ndf
-
-	//	return (ffit);              // return fit function
-
-	return SUCCESS_RETURN_VALUE;
-
-}
+// Int_t landgausFit::fitLandau( TGraph* fitData )
+// 	{
+// 	DrawAble=true;
+// 	++numOfFits;
+// 	DeleteCopies();
+// 
+// 	g=makeCopieOfTGraph(fitData);
+// 
+// 	
+// 	ffit=fitLandau_;
+// 	fitLandau_->SetParameters(StartValues);
+// 
+// 
+// 	for (Int_t i=0; i<3; i++) {
+// 		fitLandau_->SetParLimits(i, parLimitsLo[i], parLimitsHi[i]);
+// 	}
+// 
+// 	fitData->Fit(ffit,fitOptions_.c_str());   // fit within specified range, use ParLimits, do not plot
+// 
+// 	fitLandau_->GetParameters(parameters);    // obtain fit parameters
+// 	for (Int_t i=0; i<3; i++) {
+// 		fiterrors[i] = fitLandau_->GetParError(i);     // obtain fit parameter errors
+// 	}
+// 	fiterrors[gausSig]=0; // the value should not be nothing
+// 	parameters[gausSig]=0; // same here
+// 
+// 	chi = fitLandau_->GetChisquare();  // obtain chi^2
+// 	NDf = fitLandau_->GetNDF();           // obtain ndf
+// 
+// 	//	return (ffit);              // return fit function
+// 
+// 	return SUCCESS_RETURN_VALUE;
+// 
+// }
 Int_t landgausFit::FastFit( TGraph *fitData )
 	{
 	// only one type of data container should be active therefore the program checks both container types 
@@ -662,129 +647,18 @@ Size_t landgausFit::Size()
 	return returnValue;
 }
 
-TF1* landgausFit::getLandau()
+TF1* landgausFit::getLandauGauss()
 {
-	return fitLandau_;
+	return fit_Landau_gauss_;
 }
 
 void landgausFit::setFitRange(Double_t MinValue, Double_t MaxValue)
 {
-  fitLandau_->SetRange(MinValue, MaxValue);
-}
-void makeSplineFunction(const Double_t StartOfTheInterval/*=-10*/,const Double_t endOfTheInterval/*=40*/,const size_t steps/*=200*/)
-{
-	if (g_spline==nullptr)
-	{
-	gSplineMin=StartOfTheInterval;
-	gSplineMax=endOfTheInterval;
-	Double_t stepSize=(endOfTheInterval-StartOfTheInterval)/(steps-1);
-	//////////////////////////////////////////////////////////////////////////
-	// Susannes Code
-	//
-	const Double_t epsilon=1e-6;
-
-	Double_t* x=new Double_t[steps];
-	Double_t* y=new Double_t[steps];
-
-
-	y[0]=1; // define integral as 0 for x=-n_sigmas*width
-	x[0]=StartOfTheInterval;
-	TF1 f1("lan","TMath::Landau(x,0,1,0)",StartOfTheInterval,endOfTheInterval);
-	//f1.SetParameter(0,sigma);
-	ofstream out("C:/SLAC_data/testLandau.txt");
-	for(Int_t i=1;i<steps;++i) {
-		x[i]=x[i-1]+stepSize;
-		Double_t x1=x[i-1];
-		Double_t x2=x[i];
-		y[i]=y[i-1]-f1.Integral(x1,x2,(const Double_t*)0,epsilon);
-		out << " x = " << x[i] << "  y = " << y[i] << std::endl;
-	}
-
-	g_spline=new TSpline3("Ilandau",x,y,steps,"b2e2",0,0);
-	delete [] x;
-	delete [] y;
-	//////////////////////////////////////////////////////////////////////////
-	}
+  fit_Landau_gauss_->SetRange(MinValue, MaxValue);
 }
 
-Double_t landau_function( Double_t* x, Double_t* para )
-{
-	Double_t returnValue;
-	//////////////////////////////////////////////////////////////////////////
-	// Susannes Code
-	//para 0=mpv
-	//para 1=sigma
-	Double_t dsig=((x[0]-para[lanMp])/para[lanSig]); //calculate distance from mpv in sigmas
-
-	// a spline function only gives reasonable values inside the range it is defined
-	// therefore one has to make sure that the values outside this range are reasonable
-
-	if (dsig > gSplineMin && dsig < gSplineMax)
-	{
-		returnValue=g_spline->Eval(dsig);
-	}
-	else if (dsig <= gSplineMin)
-	{
-		returnValue=1;
-	}else if (dsig>=gSplineMax)
-	{
-		returnValue=0;
-	}
-
-	return returnValue;
-	//////////////////////////////////////////////////////////////////////////
-}
-
-Double_t LandauGausInt( Double_t *x,Double_t *par )
-{
-	//////////////////////////////////////////////////////////////////////////
-	// Susannes Code
-	  TString funcstr="0";
-	  Double_t tstep=par[gausSig]/20;
-      Int_t nsig=3;
-  Double_t normgaus=0;
-  
-  //Zur Normierung: Schleife ueber nsig*sigma von Gauss (z.B. 2sigma). Um Summe des Gauss (ueber +-2sigma) um 0 zu berechnen. 
-/*  
-  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
-    normgaus+=TMath::Gaus(t,0,par[gausSig]);
-  }
-*/  
-  Double_t faltung=0;
-
-  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
-    Double_t gaus=TMath::Gaus(-t,0,par[gausSig],kTRUE);
-    normgaus+=gaus;    
-    Double_t xlandau=x[0]+t;
-    faltung+=gaus*landau_function(&xlandau,par);
-  }
- // cout<<" normgaus = "<<normgaus<<"   1/tstep = "<<1/tstep<<endl;
-  faltung*=tstep;
-  //faltung/=normgaus;
-  faltung=faltung*par[Ampl];
 
 
-
-/*
-  
-  //Faltung durch Addition:Schleife ueber nsig*sigma von Gauss (z.B. 2sigma).
-  // Um Summe des normierten Gauss (ueber +-2sigma) um 0 und des integrierten Landau an der Stelle x+t zu berechnen.
-  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
-    funcstr+=(func_gspline(x+t,par[lanMp],par[lanSig]),TMath::Gaus(t,0,par[gausSig])/normgaus,t);
-  }*/
-
-//////////////////////////////////////////////////////////////////////////
-  
-  return faltung;
-}
-
-Double_t landau_function_int( Double_t* x, Double_t* para ){
-	//para 0=mpv
-	//para 1=sigma
-	//para 2=Amplitude
-	return landau_function(x,para)*para[Ampl];
-
-}
 
 TGraph* makeCopieOfTH1D(TH1D* h1){ // somehow i had some problems with just 
 								   // cloning the data therefore i make the copy by hand
@@ -820,119 +694,5 @@ TGraph* makeCopieOfTGraph(TGraph* graph_in){ // somehow i had some problems with
   return g1;
 }
 
-Double_t LandauGaus(Double_t* x, Double_t* par)
-{
-  //   par[lanMp]=Width (scale) parameter of Landau density
-  //   par[lanSig]=Most Probable (MP, location) parameter of Landau density
-  //   par[Ampl]=Total area (integral -inf to inf, normalization constant)
-  //   par[gausSig]=Width (sigma) of convoluted Gaussian function
 
 
-  
-
-
-  Double_t tstep = par[gausSig] / 20;
-  Int_t nsig = 3;
-  Double_t normgaus = 0;
-
-  //Zur Normierung: Schleife ueber nsig*sigma von Gauss (z.B. 2sigma). Um Summe des Gauss (ueber +-2sigma) um 0 zu berechnen. 
-  /*
-  for(Double_t t=-nsig*par[gausSig];t<=nsig*par[gausSig];t+=tstep) {
-  normgaus+=TMath::Gaus(t,0,par[gausSig]);
-  }
-  */
-  Double_t faltung = 0;
-
-  for (Double_t t = -nsig*par[gausSig]; t <= nsig*par[gausSig]; t += tstep) {
-    Double_t gaus = TMath::Gaus(-t, 0, par[gausSig], kTRUE);
-  //  normgaus += gaus;
-    Double_t xlandau = x[0] + t;
-    faltung += gaus*TMath::Landau(xlandau, par[lanMp],par[lanSig]);
-  }
-  // cout<<" normgaus = "<<normgaus<<"   1/tstep = "<<1/tstep<<endl;
-  faltung *= tstep;
-  //faltung/=normgaus;
-  //faltung = faltung*par[Ampl];
-
-
-  return faltung;
-}
-
-// Double_t newLandaGausInt(Double_t* x, Double_t* par){
-//   cout << "start newLandaGausInt" << endl;
-// 
-//   static Double_t lokal_para[parSize] = { 0 };
-//   bool newParam = false;
-//   for (size_t i = 0; i < parSize; ++i)
-//   {
-//     if (par[i] != lokal_para[i])
-//     {
-//       cout << "new Parameter" << endl;
-//       newParam = true;
-// 
-//       break;
-//     }
-//   }
-// 
-//   if (newParam)
-//   {
-// 
-//     for (size_t j = 0; j < parSize; ++j)
-//     {
-//       lokal_para[j] = par[j];
-//     }
-// 
-// 
-//   }
-//   Double_t integr = 1;
-// 
-//   Double_t x_start = par[lanMp] - 20 * __max(par[lanSig], par[gausSig]);
-//   
-//   Double_t x_step = __min(par[lanSig], par[gausSig])/20;
-// 
-// 
-//   for (Double_t i = x_start; i < x[0]; i+=x_step)
-//   {
-//     integr -= LandauGaus(&i, par);
-//   }
-// 
-//   integr *= par[Ampl];
-//  
-//   return integr;
-// }
-
-void makeSplineFunctionNewLandauGaus(const Double_t StartOfTheInterval/*=-10*/, const Double_t endOfTheInterval/*=40*/, const size_t steps/*=200*/)
-{
-  if (g_spline == nullptr)
-  {
-    gSplineMin = StartOfTheInterval;
-    gSplineMax = endOfTheInterval;
-    Double_t stepSize = (endOfTheInterval - StartOfTheInterval) / (steps - 1);
-    //////////////////////////////////////////////////////////////////////////
-    // Susannes Code
-    //
-    const Double_t epsilon = 1e-6;
-
-    Double_t* x = new Double_t[steps];
-    Double_t* y = new Double_t[steps];
-
-
-    y[0] = 1; // define integral as 0 for x=-n_sigmas*width
-    x[0] = StartOfTheInterval;
-    TF1 f1("lan", "TMath::Landau(x,0,1,0)", StartOfTheInterval, endOfTheInterval);
-    //f1.SetParameter(0,sigma);
-    ofstream out("C:/SLAC_data/testLandau.txt");
-    for (Int_t i = 1; i < steps; ++i) {
-      x[i] = x[i - 1] + stepSize;
-      Double_t x1 = x[i - 1];
-      Double_t x2 = x[i];
-      y[i] = y[i - 1] - f1.Integral(x1, x2, (const Double_t*) 0, epsilon);
-      out << " x = " << x[i] << "  y = " << y[i] << std::endl;
-    }
-
-    g_spline = new TSpline3("Ilandau", x, y, steps, "b2e2", 0, 0);
-    delete [] x;
-    delete [] y;
-    //////////////////////////////////////////////////////////////////////////
-  }
-}

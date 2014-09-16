@@ -86,7 +86,7 @@ public:
 	Int_t operator()(TGraph *fitData);
 	// Fits the data contained in the TH1D object
 	Int_t operator()(TH1D *fitData);
-	Int_t fitLandau( TGraph* fitData );
+	//Int_t fitLandau( TGraph* fitData );
 
 
 	/* fast fits:
@@ -112,7 +112,7 @@ public:
 	void saveFitToFile(const char* fileName);
 
 	//////////////////////////////////////////////////////////////////////////
-	TF1* getLandau();
+	TF1* getLandauGauss();
 private:
 	
 #ifndef __CINT__  // there is no need to create a Dictionary for this since you cannot call it from outside the class anyway
@@ -133,7 +133,7 @@ private:
 	TGraph *g; // This TGraph will save the data points. 
 	TF1 *ffit; // the data will be fitted with this function
 	TF1* fit_Landau_gauss_;  //Landau Convoluted with a gauss
-	TF1 *fitLandau_;  //this are the Basic functions just for Comparison 
+	//TF1 *fitLandau_;  //this are the Basic functions just for Comparison 
 	std::string fitOptions_;
 	TH1D* hData;
 	int numOfFits;

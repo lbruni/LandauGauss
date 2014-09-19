@@ -4,6 +4,7 @@
 #include "TCanvas.h"
 #include "TApplication.h"
 #include "fitFunctionClass.hh"
+#include <iostream>
 int main(int argc, char **argv){
   
   TApplication app("App", &argc, argv);
@@ -16,12 +17,13 @@ int main(int argc, char **argv){
   TTree* signal = (TTree*)f->Get("signal;1");
   landgausFit fit;
   
-  fit.setStartAmplitude(99);
-  fit.setLimits_Amplitude(90, 100);
+  fit.setStartAmplitude(100);
+  fit.setLimits_Amplitude(95, 100);
   fit.setLimits_GaussSigma(0, 200);
   fit.setLimits_LandauMP(0, 500);
   fit.setLimits_LandauSigma(0, 200);
   fit.setStartGaussSigma(27);
+  fit.setStartLandauMean(100);
   fit.setStartLandauSigma(7);
   fit.setFitRange(0,250);
   fit.setFitOptions("");
@@ -43,13 +45,16 @@ int main(int argc, char **argv){
     channelNR = i;
     cutpara = "isolating==5&&channel==" + std::to_string(i);
     name = "effiVsThr_for_channel_" + std::to_string(i) + ".png";
+    std::string name1 = "effiVsThr_for_channel_" + std::to_string(i) + ".txt";
     signal->Draw("effi4:threshold", cutpara.c_str(), "*");
     TGraph * g = (TGraph*) c.GetPrimitive("Graph");
-
+    std::cout << "===============================================================================" << std::endl;
 
     fit(g);
+    std::cout << cutpara << std::endl;
     fit.printResults();
     fit.DrawfitFunction();
+    fit.saveFitToFile(name1.c_str());
     c.Print(name.c_str());
     m_landau_mean = fit.getLandauMostProbable();
     m_landau_sigma = fit.getLandauSigma();

@@ -511,7 +511,7 @@ if (hData!=nullptr)
 void landgausFit::printResults(ostream& out)
 {
 
-	out<<"==============================================================================="<<endl;
+	
 	out<<"Fit results: "<<endl;
 	out<<"Landau Most Probable Value: "<<getLandauMostProbable()<<" +- "<< getErrorOfLandauMP() <<endl;
 	out<<"Landau Sigma              : "<<getLandauSigma()<<" +- "<< getErrorOfLandauSigma()<<endl;
@@ -519,6 +519,7 @@ void landgausFit::printResults(ostream& out)
 	out<<"Gauss Sigma               : "<<getGaussSigma()<<" +- "<< getErrorOfGaussSigma()<<endl;
 	out<<"Degrees of Freedom (NDF)  : "<<GetNDF()<<endl;
 	out<<"Chi^2                     : "<<getChiSqare()<<endl;  // read the comments to the ChiSquare Methode
+  out << "===============================================================================" << endl;
 }
 
 
@@ -531,29 +532,19 @@ void landgausFit::printResults(){
 void landgausFit::saveFitToFile( const char* fileName )
 {
 	ofstream out(fileName);
-	out<<"Fit results: "<<endl;
-	out<<"Landau Most Probable Value: "<<endl;
-	out<<getLandauMostProbable()<<endl;
-	out<<" +- "<<endl;
-	out<<getErrorOfLandauMP() <<endl;
-
-	out<<"Landau Sigma              : "<<endl;
-	out<<getLandauSigma()<<endl;
-	out<<" +- "<<endl;
-	out<<getErrorOfLandauSigma()<<endl;
-	out<<"Amplitude                 : "<<endl;
-	out<<getAmplitude()<<endl;
-	out<<" +- "<<endl;
-	out<<getErrorOfAmplitude()<<endl;
-	out<<"Gauss Sigma               : "<<endl;
-	out<<getGaussSigma()<<endl;
-	out<<" +- "<<endl;
-	out<<getErrorOfGaussSigma()<<endl;
+  out << "Fit results: " << endl;
+	out<<"Landau Most Probable Value: "<<getLandauMostProbable()<<" +- "<< getErrorOfLandauMP() << endl;
+  out<<"Landau Sigma              : "<<getLandauSigma()<<" +- "<<getErrorOfLandauSigma()<<endl;
+	out<<"Amplitude                 : "<<getAmplitude() <<" +- "<<getErrorOfAmplitude()<<endl;
+	out<<"Gauss Sigma               : "<< getGaussSigma()<<" +- "<<getErrorOfGaussSigma()<<endl;
 	out<<"data: "<<endl;
+  out << "x ;  data_y ; Fit_y" << endl;
+
 
 	Double_t x=-1;
 	Double_t y=-1;
 	Double_t y_fit=-1;
+
 
 	for (Size_t i=0;i<Size();++i)
 	{

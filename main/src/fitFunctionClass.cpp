@@ -229,7 +229,7 @@ void fitFunctionClass::CreateSplineLandauGauss()
   // printVector(landau_y);
   // printVector(gauss_y);
 
-  auto convLandau_Gaus_x = makeLine(landau_x.front() - gaus_x.back() - delta_x, delta_x, landau_x.back() - gaus_x.front() + delta_x);
+  auto convLandau_Gaus_x = makeLine(landau_x.front() + gaus_x.front() - delta_x, delta_x, landau_x.back() + gaus_x.back() + delta_x);
   assert(convLandau_Gaus_x.size() == convLandau_Gaus_y.size());
 
   newSpline(convLandau_Gaus_x, convLandau_Gaus_y);

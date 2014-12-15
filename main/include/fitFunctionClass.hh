@@ -44,7 +44,7 @@ private:
 
 Double_t NewLandauGausInt(Double_t *x, Double_t *par);
 
-
+void SetNewLandauGauss_Setparation(Double_t Separation);
 
 
 

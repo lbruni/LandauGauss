@@ -12,7 +12,7 @@
 using namespace std;
 
 
-
+Double_t gSeparationLandauGauss = 100;
 
 
 #define printVector(vec) print2file(#vec ## ".txt",vec)
@@ -83,6 +83,27 @@ Container convolut(Container A_Container, Container B_container){
   return conv;
 }
 
+template <typename Conteiner_t>
+value_t Normalise(Conteiner_t & inOutContainer){
+  value_t sum = 0;
+  for (auto& e : inOutContainer)
+  {
+    
+    sum += e;
+  }
+
+  //cout << "sum: " << sum << endl;
+//  assert(abs(sum - 1) < 0.05);
+
+  value_t sum1 = 0;
+  for (auto& e : inOutContainer)
+  {
+    e /= sum;
+    sum1 += e;
+  }
+//  assert(abs(sum1 - 1) < 0.00005);
+  return sum1;
+}
 
 template <typename Container_t,typename VALUE_T>
 Container_t cumsum(Container_t inContainer, VALUE_T startValue=0, VALUE_T Factor=1){
@@ -104,6 +125,11 @@ Double_t NewLandauGausInt(Double_t *x, Double_t *par)
   return fitfun(x[0]);
 }
 
+void SetNewLandauGauss_Setparation(Double_t Separation)
+{
+  gSeparationLandauGauss = Separation;
+}
+
 void fitFunctionClass::newFunction()
 {
 
@@ -114,11 +140,11 @@ void fitFunctionClass::newSplineFunction()
 
 
 
- if (parameters[lanSig]>100*parameters[gausSig])
+  if (parameters[lanSig]>gSeparationLandauGauss*parameters[gausSig])
  {
    CreateSplineLandau();
  }
- else if (parameters[lanSig] * 100 < parameters[gausSig]){
+  else if (parameters[lanSig] * gSeparationLandauGauss< parameters[gausSig]){
    CreateSplineGaus();
  }
  else{
@@ -189,7 +215,8 @@ void fitFunctionClass::CreateSplineGaus()
   value_t delta_x = parameters[gausSig] / 10;
   auto gaus_x = makeLine(-5 * parameters[gausSig], delta_x, 5 * parameters[gausSig]);
   auto gauss_y = callFunction(&TMath::Gaus, gaus_x, 0, parameters[gausSig]);
-
+  auto sum = Normalise(gauss_y);
+  assert(abs(sum - 1) < 0.00005);
   newSpline(gaus_x, gauss_y);
 }
 
@@ -201,6 +228,9 @@ void fitFunctionClass::CreateSplineLandau()
 
   auto landau_x = makeLine(parameters[lanMp] - 5 * parameters[lanSig], delta_x, parameters[lanMp] + 100 * parameters[lanSig]);
   auto landau_y = callFunction(&TMath::Landau, landau_x, parameters[lanMp], parameters[lanSig]);
+  
+  auto sum = Normalise(landau_y);
+  assert(abs(sum - 1) < 0.00005);
   newSpline(landau_x, landau_y);
 }
 
@@ -216,15 +246,16 @@ void fitFunctionClass::CreateSplineLandauGauss()
   auto landau_y = callFunction(&TMath::Landau, landau_x, parameters[lanMp], parameters[lanSig]);
 
   auto convLandau_Gaus_y = convolut(landau_y, gauss_y);
-  value_t sum = 0;
+ 
   for (auto& e : convLandau_Gaus_y)
   {
     e *= (delta_x*delta_x);
-    sum += e;
+   
   }
 
-  //cout << "sum: " << sum << endl;
-  assert(abs(sum - 1) < 0.05);
+ auto sum= Normalise(convLandau_Gaus_y);
+ assert(abs(sum - 1) < 0.00005);
+  //cout << "sum1: " << sum1 << endl;
   // printVector(convLandau_Gaus_y);
   // printVector(landau_y);
   // printVector(gauss_y);

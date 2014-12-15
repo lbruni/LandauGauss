@@ -28,8 +28,8 @@ Double_t LandauGaus(Double_t* x, Double_t* par);
 
 
 
-	TGraph* makeCopieOfTH1D(TH1D* h1);
-  TGraph* makeCopieOfTGraph(TGraph* h1);
+	TGraph* makeCopieOfTH1D(TH1D* h1,Int_t firstBin=0,Int_t lastBin=-1);
+  TGraph* makeCopieOfTGraph(TGraph* h1, Int_t firstBin = 0, Int_t lastBin = -1);
 
 
 landgausFit::landgausFit(void)
@@ -61,6 +61,7 @@ landgausFit::landgausFit(void)
 	setLimits_GaussSigma();
 	setLimits_LandauMP();
 	setLimits_LandauSigma();
+  setLandauGauss_Separation();
 	fitOptions_="RB0Q";
 }
 
@@ -278,12 +279,12 @@ Double_t landgausFit::GetNDF()
 
 
 
-Int_t landgausFit::operator()( TGraph *fitData )
+Int_t landgausFit::operator()(TGraph *fitData, Int_t firstBin, Int_t Lastbin)
 {
 
 	// only one type of data container should be active therefore the program checks both container types 
 	DeleteCopies();
-	g=makeCopieOfTGraph(fitData);
+	g=makeCopieOfTGraph(fitData,firstBin,Lastbin);
 	DrawAble=true;
 	++numOfFits;
 	//////////////////////////////////////////////////////////////////////////
@@ -334,11 +335,11 @@ Int_t landgausFit::operator()( TGraph *fitData )
 return SUCCESS_RETURN_VALUE;
 }
 
-Int_t landgausFit::operator()( TH1D *fitData )
+Int_t landgausFit::operator()(TH1D *fitData, Int_t firstBin , Int_t Lastbin )
 {
 	
 DeleteCopies();
-g=makeCopieOfTH1D(fitData);
+g=makeCopieOfTH1D(fitData,firstBin,Lastbin);
 	DrawAble=true;
 	++numOfFits;
 	ffit=fit_Landau_gauss_;
@@ -648,35 +649,57 @@ void landgausFit::setFitRange(Double_t MinValue, Double_t MaxValue)
   fit_Landau_gauss_->SetRange(MinValue, MaxValue);
 }
 
-
-
-
-TGraph* makeCopieOfTH1D(TH1D* h1){ // somehow i had some problems with just 
-								   // cloning the data therefore i make the copy by hand
-
-	TGraph *g1=new TGraph();
-	for (size_t i=1;i<h1->GetNbinsX();++i)
-	{
-		g1->SetPoint(i-1,h1->GetBinCenter(i),h1->GetBinContent(i)); 
-		Double_t x,y;
-		g1->GetPoint(i-1,x,y);
-		//cout<<h1->GetBinCenter(i)<<"   ;   " <<x<< "   ;   "<<h1->GetBinContent(i)<<"  ;  "<<y<<endl;
-	}
-
-	g1->SetEditable(false);
-
-return g1;
+void landgausFit::setLandauGauss_Separation(Double_t separation /*= 100*/)
+{
+  SetNewLandauGauss_Setparation(separation);
 }
-TGraph* makeCopieOfTGraph(TGraph* graph_in){ // somehow i had some problems with just 
+
+
+
+
+
+TGraph* makeCopieOfTH1D(TH1D* h1, Int_t firstBin/*=0*/, Int_t lastBin/*=-1*/)
+{
+  // somehow i had some problems with just 
   // cloning the data therefore i make the copy by hand
 
   TGraph *g1 = new TGraph();
-  for (size_t i = 0; i < graph_in->GetN(); ++i)
+  if (lastBin==-1)
+  {
+    lastBin = h1->GetNbinsX();
+  }
+  Int_t counter = 0;
+  for (size_t i = firstBin; i < lastBin; ++i)
+  {
+    g1->SetPoint(counter++, h1->GetBinCenter(i), h1->GetBinContent(i));
+   // Double_t x, y;
+   // g1->GetPoint(i - 1, x, y);
+    //cout<<h1->GetBinCenter(i)<<"   ;   " <<x<< "   ;   "<<h1->GetBinContent(i)<<"  ;  "<<y<<endl;
+  }
+
+  g1->SetEditable(false);
+
+  return g1;
+}
+
+
+TGraph* makeCopieOfTGraph(TGraph* graph_in, Int_t firstBin /*= 0*/, Int_t lastBin /*= -1*/)
+{
+  // somehow i had some problems with just 
+  // cloning the data therefore i make the copy by hand
+  TGraph *g1 = new TGraph();
+  if (lastBin == -1)
+  {
+    lastBin = graph_in->GetN();
+  }
+
+  Int_t counter = 0;
+  for (size_t i = firstBin; i <lastBin; ++i)
   {
     Double_t x, y;
     graph_in->GetPoint(i, x, y);
-    g1->SetPoint(i, x, y);
-      
+    g1->SetPoint(counter++, x, y);
+
     //cout<<h1->GetBinCenter(i)<<"   ;   " <<x<< "   ;   "<<h1->GetBinContent(i)<<"  ;  "<<y<<endl;
   }
 

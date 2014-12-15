@@ -54,6 +54,7 @@ public:
 	void setLimits_GaussSigma(Double_t startValue=0,Double_t endValue=1000);
 	void setFitOptions(const char* options);
   void setFitRange(Double_t MinValue, Double_t MaxValue);
+  void setLandauGauss_Separation(Double_t separation = 100);
 	// the default values have to be implemented different in future 
 	//////////////////////////////////////////////////////////////////////////
 
@@ -83,9 +84,9 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Workers
 	// Fits the data contained in the TGraph object
-	Int_t operator()(TGraph *fitData);
+	Int_t operator()(TGraph *fitData,Int_t firstBin=0,Int_t Lastbin=-1);
 	// Fits the data contained in the TH1D object
-	Int_t operator()(TH1D *fitData);
+  Int_t operator()(TH1D *fitData, Int_t firstBin = 0, Int_t Lastbin = -1);
 	//Int_t fitLandau( TGraph* fitData );
 
 
@@ -129,6 +130,7 @@ private:
 	Double_t parameters[4];
 	Double_t chi;
 	Double_t NDf;
+ 
 	Bool_t DrawAble;  // this flag decides if one can draw the output or not. in FastFit() no copie of the datas is made therefore it is not Drawable.
 	TGraph *g; // This TGraph will save the data points. 
 	TF1 *ffit; // the data will be fitted with this function

@@ -38,13 +38,7 @@ landgausFit::landgausFit(void)
 	g=nullptr;
 	hData=nullptr;
 	DrawAble =false;
-// 	parameters=new Double_t[4];
-// 	StartValues=new Double_t[4];
-// 	fiterrors=new Double_t[4];
 	setStartValues();
-
-
-	
 
 	ffit =nullptr;
 	// preparing the fit function
@@ -53,8 +47,6 @@ landgausFit::landgausFit(void)
 
 	
 	//preparing the Landau Function
-//	fitLandau_=nullptr;
-	//fitLandau_->SetParNames("landau_mean","landau_sigma","Amplitude");
 	
 	// setting everything to the Default Values
 	setLimits_Amplitude();
@@ -306,22 +298,12 @@ Int_t landgausFit::operator()(TGraph *fitData, Int_t firstBin, Int_t Lastbin)
 	//   ChiSqr          returns the chi square
 	//   NDF             returns ndf
 
-	
-	
-
-	//sprintf(FunName,"Fitfcn_%s",his->GetName());
-
 	ffit=fit_Landau_gauss_;
-
 	ffit->SetParameters(StartValues);
-
-	//parLimitsLo={0,0,0,0};
-	 //Double_t parLimitsHi[4]={1000,1000,2,1000};
 	for (Int_t i=0; i<4; i++) {
 		ffit->SetParLimits(i, parLimitsLo[i], parLimitsHi[i]);
 	}
 
-	//fitData->Fit(ffit,"RB0QWW");   // fit within specified range, use ParLimits, do not plot
 	g->Fit(ffit,fitOptions_.c_str());   
 	ffit->GetParameters(parameters);    // obtain fit parameters
 	for (Int_t i=0; i<4; i++) {
@@ -329,8 +311,6 @@ Int_t landgausFit::operator()(TGraph *fitData, Int_t firstBin, Int_t Lastbin)
 	}
 	 chi = ffit->GetChisquare();  // obtain chi^2
 	 NDf = ffit->GetNDF();           // obtain ndf
-	 
-//	return (ffit);              // return fit function
 
 return SUCCESS_RETURN_VALUE;
 }
@@ -672,9 +652,6 @@ TGraph* makeCopieOfTH1D(TH1D* h1, Int_t firstBin/*=0*/, Int_t lastBin/*=-1*/)
   for (size_t i = firstBin; i < lastBin; ++i)
   {
     g1->SetPoint(counter++, h1->GetBinCenter(i), h1->GetBinContent(i));
-   // Double_t x, y;
-   // g1->GetPoint(i - 1, x, y);
-    //cout<<h1->GetBinCenter(i)<<"   ;   " <<x<< "   ;   "<<h1->GetBinContent(i)<<"  ;  "<<y<<endl;
   }
 
   g1->SetEditable(false);
@@ -699,8 +676,6 @@ TGraph* makeCopieOfTGraph(TGraph* graph_in, Int_t firstBin /*= 0*/, Int_t lastBi
     Double_t x, y;
     graph_in->GetPoint(i, x, y);
     g1->SetPoint(counter++, x, y);
-
-    //cout<<h1->GetBinCenter(i)<<"   ;   " <<x<< "   ;   "<<h1->GetBinContent(i)<<"  ;  "<<y<<endl;
   }
 
   g1->SetEditable(false);

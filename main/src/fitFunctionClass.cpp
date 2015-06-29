@@ -66,7 +66,7 @@ Container convolut(Container A_Container, Container B_container){
 
   for (int k = 0; k < conv.size();++k)
   {
-    Container::value_type c = 0;
+   typename Container::value_type c = 0;
 
     for (int j = 0; j < A_Container.size();++j)
     {

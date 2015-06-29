@@ -9,7 +9,12 @@
 #define SUCCESS_RETURN_VALUE 1
 
 #ifndef __CINT__
+#ifdef  WIN32
 #define DLL_exp _declspec(dllexport) 
+#else
+#define DLL_exp  
+#endif //  WIN32
+
 
 class TF1;
 class TH1D;

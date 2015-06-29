@@ -8,8 +8,13 @@
 #define Ampl    2
 #define gausSig 3
 #define parSize 4
+#ifdef WIN32
 
 #define DllExport   __declspec( dllexport )
+#else 
+#define DllExport   
+#endif // WIN32
+
 class TSpline3;
 typedef Double_t value_t;
 typedef std::vector < value_t > axis;

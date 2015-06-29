@@ -236,7 +236,7 @@ void fitFunctionClass::CreateSplineLandau()
 
 void fitFunctionClass::CreateSplineLandauGauss()
 {
-  value_t delta_x = __min(parameters[gausSig] / 10, parameters[lanSig] / 5);
+  value_t delta_x = TMath::Min(parameters[gausSig] / 10, parameters[lanSig] / 5);
 
   auto gaus_x = makeLine(-5 * parameters[gausSig], delta_x, 5 * parameters[gausSig]);
   auto landau_x = makeLine(parameters[lanMp] - 5 * parameters[lanSig], delta_x, parameters[lanMp] + 100 * parameters[lanSig]);

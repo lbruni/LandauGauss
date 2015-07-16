@@ -1,6 +1,7 @@
 #pragma once
 #include "Rtypes.h"
-
+#include "TCanvas.h"
+#include <TGraphErrors.h>
 
 // incomplete function types to prevent pollution of the Header file
 
@@ -19,7 +20,7 @@
 class TF1;
 class TH1D;
 class TH2D;
-class TGraph;
+class TGraphErrors;
 class string;
 
 #else 
@@ -29,6 +30,8 @@ class string;
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TGraph.h>
+#include <TGraphErrors.h>
+
 #define DLL_exp 
 #endif // __CINT__
 
@@ -89,7 +92,7 @@ public:
 	//////////////////////////////////////////////////////////////////////////
 	// Workers
 	// Fits the data contained in the TGraph object
-	Int_t operator()(TGraph *fitData,Int_t firstBin=0,Int_t Lastbin=-1);
+	Int_t operator()(TGraphErrors *fitData,Int_t firstBin=0,Int_t Lastbin=-1);
 	// Fits the data contained in the TH1D object
   Int_t operator()(TH1D *fitData, Int_t firstBin = 0, Int_t Lastbin = -1);
 	//Int_t fitLandau( TGraph* fitData );
@@ -99,7 +102,7 @@ public:
 			they don't make copies of the Data set therefore they are not drawable */
 
 	// Fits the data contained in the TGraph object
-	Int_t FastFit(TGraph *fitData);
+	Int_t FastFit(TGraphErrors *fitData);
 	
 	// Fits the data contained in the TH1D object
 	Int_t FastFit(TH1D *fitData);
@@ -110,9 +113,8 @@ public:
 	// display Methods
 
 	// draws the Data set and the Fit function on top
-	Int_t DrawfitFunction();
-
-	// prints Out the results of the fits
+	Int_t DrawfitFunction(Int_t channel);
+    // prints Out the results of the fits
 	void printResults(std::ostream& out);
 	void printResults();
 	void saveFitToFile(const char* fileName);
@@ -135,9 +137,9 @@ private:
 	Double_t parameters[4];
 	Double_t chi;
 	Double_t NDf;
- 
+    TCanvas *m_c;
 	Bool_t DrawAble;  // this flag decides if one can draw the output or not. in FastFit() no copie of the datas is made therefore it is not Drawable.
-	TGraph *g; // This TGraph will save the data points. 
+	TGraphErrors *g; // This TGraph will save the data points. 
 	TF1 *ffit; // the data will be fitted with this function
 	TF1* fit_Landau_gauss_;  //Landau Convoluted with a gauss
 	//TF1 *fitLandau_;  //this are the Basic functions just for Comparison 
